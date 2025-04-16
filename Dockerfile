@@ -4,16 +4,21 @@ FROM python:3.12-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Install uv
+# Install uv globally first
 RUN pip install uv
+
+# Create a virtual environment
+RUN uv venv /app/.venv
+
+# Set PATH to include venv's bin directory for subsequent RUN/CMD instructions
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy the project definition file
 COPY pyproject.toml .
 
-# Install dependencies using uv sync
-# --system installs packages into the global site-packages directory
+# Install dependencies into the virtual environment
 # --no-cache prevents caching which is useful in CI/CD
-RUN uv sync --system --no-cache pyproject.toml
+RUN uv sync --no-cache
 
 # Copy the current directory contents into the container at /app
 COPY . .
