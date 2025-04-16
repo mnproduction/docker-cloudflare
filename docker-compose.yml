@@ -1,0 +1,16 @@
+services:
+  app: # Name of the FastAPI application service
+    build: . # Build the image using the Dockerfile in the current directory
+    container_name: my-fastapi-app # Optional: Give the container a specific name
+    restart: unless-stopped
+    # No ports exposed directly to the host, tunnel connects internally
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest # The image name
+    container_name: cloudflared-tunnel # Optional: Give the container a specific name
+    restart: unless-stopped            # Automatically restart the container unless manually stopped
+    command: tunnel --no-autoupdate --url http://app:80 run # Point tunnel to the 'app' service on port 80
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}    # Pass the token as an environment variable
+    depends_on: # Ensure 'app' starts before 'cloudflared' attempts to connect
+      - app
